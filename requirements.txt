@@ -1,0 +1,15 @@
+# AI Email Intelligence Environment — Python Dependencies
+
+# Core runtime
+pydantic>=2.0.0,<3.0.0      # Data validation & models (Observation, Action, Reward)
+pyyaml>=6.0                  # Parse openenv.yaml
+
+# Inference / LLM (optional but recommended)
+openai>=1.0.0                # OpenAI-compatible API client
+
+# Testing
+pytest>=7.0.0                # Unit test runner
+pytest-cov>=4.0.0            # Coverage reports
+
+# Development / utilities
+python-dotenv>=1.0.0         # Load .env files for local development

@@ -1,0 +1,167 @@
+# openenv.yaml
+# AI Email Intelligence Environment — OpenEnv Compliance Manifest
+# Validates with: openenv validate
+
+name: ai-email-intelligence-environment
+version: "1.0.0"
+description: >
+  A multi-task email management environment where an AI agent classifies,
+  summarises, and generates replies to realistic emails. Supports
+  step-by-step rewards, partial scoring, and loop penalisation.
+
+author: AI Email Intelligence Team
+license: MIT
+tags:
+  - email
+  - nlp
+  - classification
+  - summarization
+  - generation
+  - multi-task
+
+# ── OpenEnv API ──────────────────────────────────────────────────────────────
+environment:
+  module: email_env.env
+  class: EmailEnvironment
+  init_kwargs:
+    seed: 42
+    shuffle: false
+
+  # Core methods (OpenEnv contract)
+  api:
+    reset:
+      returns: Observation
+      description: Reset episode; returns first email observation.
+    step:
+      accepts: Action
+      returns:
+        - Observation   # next observation
+        - Reward        # score + feedback
+        - bool          # done flag
+        - dict          # info metadata
+      description: Apply action, grade it, advance to next task.
+    state:
+      returns: EnvironmentState
+      description: Return a snapshot of the current environment state.
+
+# ── Pydantic Models ──────────────────────────────────────────────────────────
+models:
+  module: email_env.models
+
+  observation:
+    class: Observation
+    fields:
+      task_type:
+        type: string
+        enum: [classification, summarization, reply]
+      email_text:
+        type: string
+      task_id:
+        type: string
+        required: false
+      instructions:
+        type: string
+        required: false
+
+  action:
+    class: Action
+    fields:
+      response:
+        type: string
+        description: >
+          Single-word label for classification; 1-2 sentence summary
+          for summarization; full professional email for reply.
+
+  reward:
+    class: Reward
+    fields:
+      score:
+        type: float
+        range: [-1.0, 1.0]
+      feedback:
+        type: string
+      partial:
+        type: boolean
+
+# ── Tasks ────────────────────────────────────────────────────────────────────
+tasks:
+  - id: classification
+    name: Email Classification
+    difficulty: easy
+    description: >
+      Classify an email as exactly one of: spam, important, or normal.
+    grader: email_env.graders.classification_grader.grade_classification
+    reward:
+      correct: +1.0
+      wrong_valid_label: -0.2
+      invalid_response: -0.5
+    sample_count: 10
+
+  - id: summarization
+    name: Email Summarization
+    difficulty: medium
+    description: >
+      Summarize a multi-paragraph email in 1–2 concise sentences,
+      capturing the main point and any critical action items.
+    grader: email_env.graders.summarization_grader.grade_summarization
+    reward:
+      max: 1.0
+      min: 0.0
+      partial: true
+      components:
+        keyword_coverage: 0.50
+        semantic_similarity: 0.30
+        length_quality: 0.20
+    sample_count: 5
+
+  - id: reply
+    name: Email Reply Generation
+    difficulty: hard
+    description: >
+      Write a professional, empathetic reply to a customer email,
+      addressing all raised concerns with appropriate tone.
+    grader: email_env.graders.reply_grader.grade_reply
+    reward:
+      max: 1.0
+      min: 0.0
+      partial: true
+      components:
+        relevance: 0.35
+        tone: 0.30
+        completeness: 0.20
+        format: 0.15
+    sample_count: 5
+
+# ── Reward Configuration ─────────────────────────────────────────────────────
+reward:
+  range: [-1.0, 1.0]
+  partial_scoring: true
+  loop_penalty: -0.1
+  reproducible: true
+  deterministic: true
+
+# ── Episode ──────────────────────────────────────────────────────────────────
+episode:
+  total_tasks: 20
+  task_composition:
+    classification: 10
+    summarization: 5
+    reply: 5
+  ordered: true
+  seed: 42
+
+# ── Baseline ─────────────────────────────────────────────────────────────────
+baseline:
+  script: email_env/inference.py
+  requires_env:
+    - HF_TOKEN
+  expected_scores:
+    classification: ~0.72
+    summarization: ~0.55
+    reply: ~0.48
+
+# ── Docker ───────────────────────────────────────────────────────────────────
+docker:
+  image: ai-email-env
+  build_command: docker build -t ai-email-env .
+  run_command: docker run --rm -e HF_TOKEN=$HF_TOKEN ai-email-env python email_env/inference.py

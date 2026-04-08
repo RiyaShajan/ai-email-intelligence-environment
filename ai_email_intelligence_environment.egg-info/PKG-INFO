@@ -1,0 +1,17 @@
+Metadata-Version: 2.4
+Name: ai-email-intelligence-environment
+Version: 1.0.0
+Summary: OpenEnv-compliant AI environment for email management tasks
+Requires-Python: >=3.9
+Requires-Dist: pydantic<3.0.0,>=2.0.0
+Requires-Dist: pyyaml>=6.0
+Provides-Extra: inference
+Requires-Dist: openai>=1.0.0; extra == "inference"
+Provides-Extra: dev
+Requires-Dist: pytest>=7.0.0; extra == "dev"
+Requires-Dist: pytest-cov>=4.0.0; extra == "dev"
+Requires-Dist: python-dotenv>=1.0.0; extra == "dev"
+Dynamic: provides-extra
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary
