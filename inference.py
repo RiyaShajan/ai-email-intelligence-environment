@@ -1,20 +1,14 @@
-from email_env.env import EmailEnvironment
-from email_env.models import Action
+from env import EmailEnv
 
-def run(task_type, email_text, response):
-    env = EmailEnvironment(seed=42)
-    obs = env.reset()
-    
-    while obs.task_type != task_type and env.current_step < env.total_tasks:
-        _, _, done, _ = env.step(Action(response="spam"))
-        if done:
-            break
-        obs = env._make_observation()
+env = EmailEnv()
 
-    action = Action(response=response)
-    _, reward, _, info = env.step(action)
+state = env.reset()
+done = False
+total_reward = 0
 
-    return {
-        "score": reward.score,
-        "feedback": reward.feedback
-    }
+while not done:
+    action = "classify_meeting"  # baseline action
+    state, reward, done, _ = env.step(action)
+    total_reward += reward
+
+print("Final Score:", total_reward)
