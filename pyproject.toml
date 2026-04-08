@@ -1,6 +1,6 @@
 [build-system]
 requires = ["setuptools>=61.0", "wheel"]
-build-backend = "setuptools.backends.legacy:build"
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "ai-email-intelligence-environment"
@@ -9,20 +9,20 @@ description = "OpenEnv-compliant AI environment for email classification, summar
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.9"
+
 dependencies = [
-    "pydantic>=2.0.0",
-    "pyyaml>=6.0",
     "fastapi",
     "uvicorn",
+    "pydantic>=2.0.0",
+    "pyyaml>=6.0",
     "gradio>=6.11.0",
+    "openenv>=0.2.0"   # ✅ IMPORTANT
 ]
 
-[project.optional-dependencies]
-dev = [
-    "pytest>=7.0.0",
-    "pytest-cov>=4.0.0",
-]
+# ✅ REQUIRED FOR SCALER
+[project.scripts]
+server = "server.app:app"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["email_env*"]
+include = ["*"]
