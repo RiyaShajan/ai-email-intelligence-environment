@@ -1,7 +1,7 @@
-import sys
-import os
+from fastapi import FastAPI
 
-# Add all possible paths
-sys.path.insert(0, '/app')
-sys.path.insert(0, '/app/ai-email-intelligence-environment')
-sys.path.insert(0, os.path.dirname(__file__))
+app = FastAPI()
+
+@app.get("/")
+def read_root():
+    return {"message": "AI Email Intelligence Environment is running"}
